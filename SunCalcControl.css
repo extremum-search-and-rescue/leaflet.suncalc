@@ -1,0 +1,99 @@
+﻿.suncalc-control {
+    pointer-events: none;
+}
+.suncalc-dusk {
+    fill: red;
+    stroke-width: 0;
+    fill-opacity: 0.5;
+}
+
+.suncalc-dawn {
+    fill: yellow;
+    stroke-width: 0;
+    fill-opacity: 0.5;
+}
+
+@media (pointer: coarse) {
+    .suncalc-sun-label {
+        font-size: 9px;
+    }
+}
+
+@media (pointer: fine) {
+    .suncalc-sun-label {
+        font-size: 11px;
+    }
+}
+
+.suncalc-sun {
+    fill: #FFB800;
+    fill-opacity: 0.5;
+}
+
+.suncalc-moon.gis-theme-light{
+    fill: black;
+}
+.suncalc-moon.gis-theme-dark {
+    fill: white;
+}
+
+.suncalc-sun-path {
+    stroke-width: 2;
+    stroke-opacity: 0.7;
+    stroke-dasharray: 7px 3px;
+    fill: none;
+}
+.suncalc-sun-path.gis-theme-light {
+    stroke: orangered;
+}
+
+.suncalc-sun-path.gis-theme-dark {
+    stroke: orange;
+}
+
+.suncalc-moon-path {
+    stroke-width: 2;
+    stroke-dasharray: 2 2;
+    stroke-opacity: 0.7;
+    fill: none;
+}
+.suncalc-moon-path.gis-theme-light {
+    stroke: darkred;
+}
+
+.suncalc-moon-path.gis-theme-dark {
+    stroke: white;
+}
+.suncalc-azimuth-circle {
+    stroke-width: 2;
+    stroke-opacity: 0.8;
+    fill: none;
+}
+.suncalc-azimuth-circle.gis-theme-light {
+    stroke: darkred;
+}
+
+.suncalc-azimuth-circle.gis-theme-dark {
+    stroke: white;
+}
+
+.suncalc-sun-label {
+    font-family: -apple-system, "Helvetica Neue", "Segoe UI", "Roboto", sans-serif;
+    text-anchor: middle;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+    .suncalc-sun-label.gis-theme-light {
+        fill: darkred;
+        text-shadow: 1px 1px white;
+    }
+    .suncalc-sun-label.gis-theme-dark {
+        fill: #FFB800;
+        text-shadow: 1px 1px black;
+    }
+
+
+.suncalc-shaded {
+    opacity: 0.5;
+}
