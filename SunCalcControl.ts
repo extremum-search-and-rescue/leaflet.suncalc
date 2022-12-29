@@ -1,5 +1,4 @@
-﻿
-function isValidDate(d: Date | number): boolean {
+﻿function isValidDate(d: Date | number): boolean {
     return d instanceof Date && !isNaN(d as unknown as number);
 }
 declare interface Date {
@@ -38,7 +37,7 @@ namespace L {
         }
         export class SunCalcControl extends L.Control {
             
-            options: SunCalcControlOptions 
+            override options: SunCalcControlOptions 
             _previousCenter?: L.LatLng = null
             _previousDate?: Date = null
             isVisible: boolean = false
@@ -49,20 +48,20 @@ namespace L {
             controlMargin: number;
             fullControlSize: number;
 
-            constructor(options: SunCalcControlOptions) {
+            constructor(options?: SunCalcControlOptions) {
                 options = { ...new SunCalcControlOptions(), ...options }
                 super(options);
             }
 
 
-            hide (e) {
+            hide(e: LayersControlEvent & { layer: L.Layer & { options: any } }) {
                 if (e.layer && e.layer.options && e.layer.options.id === 'SC') {
                     this.isVisible = false;
                     const div = document.querySelector('.suncalc-control');
                     div.innerHTML = '';
                 }
             }
-            show (e) {
+            show(e: LayersControlEvent & { layer: L.Layer & { options: any } }) {
                 if (e.layer && e.layer.options && e.layer.options.id === 'SC') {
                     this.isVisible = true;
                     this.updateSunMoonCalc();
@@ -78,7 +77,7 @@ namespace L {
                 const distance = mapCenter.distanceTo(this._previousCenter);
                 const currentDate = new Date();
 
-                const timeDiffInSeconds = (currentDate - this._previousDate) / 1000;
+                const timeDiffInSeconds = (currentDate.valueOf() - this._previousDate.valueOf()) / 1000;
                 if (distance < 5000 && timeDiffInSeconds < 60) return;
 
                 this._map.sunCalcControl.refesh(
@@ -104,7 +103,7 @@ namespace L {
                 this._previousDate = currentDate;
             }
 
-            onAdd (map: L.Map) {
+            override onAdd (map: L.Map) {
                 if (!window.SunCalc) throw new Error("SunCalcControl requires SunCalc.js to be added to window global object");
 
                 this._map = map;
@@ -124,18 +123,14 @@ namespace L {
                 this._container.style.position = 'absolute';
 
                 setInterval(() => {
-                    if (this.isVisible && (Math.abs(new Date() - this._previousDate) / 1000) > 60)
+                    if (this.isVisible && (Math.abs(new Date().valueOf() - this._previousDate.valueOf()) / 1000) > 60)
                         this.updateSunMoonCalc();
                 }, 60000);
                 map.whenReady(this.updateSunMoonCalc, this);
                 return this._container;
             }
 
-            onRemove(map) {
-
-            }
-
-            refesh (sunTimes, moonTimes, latlng) {
+            refesh (sunTimes: SunCalc.GetTimesResult, moonTimes: SunCalc.GetMoonTimes, latlng: L.LatLng) {
                 if (!this._map.hasLayer(suncalc)) {
                     this._container.innerHTML = '';
                 } else {
@@ -211,14 +206,14 @@ namespace L {
                 }
             }
 
-            getSvgTextLabel (date: Date, position, cls, shadedCls, startTime?, endTime?): string {
+            getSvgTextLabel (date: Date, position: SunCalc.GetSunPositionResult, cls:string, shadedCls:string, startTime?: Date, endTime?: Date): string {
                 if (!isValidDate(date) || date > endTime || date < startTime) return '';
                 const xy = this.getXY(position, 20);
                 return `<text class="${cls}${position.altitude < -0.1 ? ` ${shadedCls}` : ''}" x="${xy.x}" y="${xy.y}">${date.getHours().pad(2)}:${date.getMinutes().pad(2)}</text>`;
             }
 
-            getTimesFromDuskTillDown (start, end) {
-                const times = [];
+            getTimesFromDuskTillDown (start: Date, end: Date): Array<Date> {
+                const times: Array<Date> = [];
                 start = isValidDate(start) ? start : this.getDateForHour(0);
                 end = isValidDate(end) ? end : this.getDateForHour(23);
                 if (start > end) end = end.addDays(1);
@@ -228,7 +223,7 @@ namespace L {
                 return times;
             }
 
-            getXYforTimes (times, positionFunction, latlng, offset): Array<L.Point> {
+            getXYforTimes(times: Date[], positionFunction: (times: Date,lat: number,lng: number) => SunCalc.GetSunPositionResult, latlng: L.LatLng, offset: number): Array<L.Point> {
                 const xy: Array<L.Point> = [];
                 for (let i = 0; i < times.length; i++) {
                     xy.push(this.getXY(positionFunction(times[i], latlng.lat, latlng.lng), offset));
@@ -236,7 +231,7 @@ namespace L {
                 return xy;
             }
 
-            getPathClipPoints (dawn, dusk, positionFunction, latlng, offset) {
+            getPathClipPoints(dawn: Date, dusk: Date, positionFunction: (times: Date, lat: number, lng: number) => SunCalc.GetSunPositionResult, latlng: L.LatLng, offset: number) {
                 const points = [];
                 const xy = this.getXYforTimes(this.getTimesFromDuskTillDown(dawn, dusk), positionFunction, latlng, offset);
                 for (let i = 0; i < xy.length; i++) {
@@ -246,7 +241,7 @@ namespace L {
                 return points;
             }
 
-            polylineForTimeAndPlace (time, latlng, cssclass, timeEnd?, tooltipContent?) {
+            polylineForTimeAndPlace (time: Date, latlng: L.LatLng, cssclass: string, timeEnd?: Date, tooltipContent?: string) {
                 if (!isValidDate(time) || !isValidDate(timeEnd)) return '';
 
                 const x = this.halfSize * Math.cos(SunCalc.getPosition(time, latlng.lat, latlng.lng).azimuth + Math.PI / 2);
@@ -260,7 +255,7 @@ namespace L {
                     return `<polyline class="suncalc-${cssclass}" points='${this.halfSize},${this.halfSize} ${this.halfSize + Math.round(x)},${this.halfSize + Math.round(y)}'>${titleTag}</polyline>`;
             }
 
-            getXY(position, modificator?: number): L.Point {
+            getXY(position: SunCalc.GetSunPositionResult | SunCalc.GetMoonPositionResult, modificator?: number): L.Point {
                 const retval = new L.Point(0, 0);
                 const offset = modificator ? modificator : 0;
                 retval.x = Math.round((this.circleSize / 2 + this.controlMargin) + ((this.circleSize / 2 + offset) * Math.cos(position.azimuth + Math.PI / 2)));
@@ -281,7 +276,7 @@ namespace L {
     }
 
     export namespace control {
-        export function suncalc(options) {
+        export function suncalc(options?: L.Control.SunCalcControlOptions) {
             return new L.Control.SunCalcControl(options);
         }
     }
