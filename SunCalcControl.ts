@@ -5,6 +5,7 @@ declare interface Date {
     addHours(hours: number): Date;
     addDays(days: number): Date;
     addMinutes(minutes: number): Date;
+    addSeconds(seconds: number): Date;
 
     isValid(d: Date): boolean;
 }
@@ -19,6 +20,9 @@ Date.prototype.addHours = function (hours: number) {
 
 Date.prototype.addMinutes = function (minutes: number) {
     return new Date(this.getTime() + (minutes * 60 * 1000));
+}
+Date.prototype.addSeconds = function (seconds: number) {
+    return new Date(this.getTime() + (seconds * 1000));
 }
 
 Date.prototype.isValid = function (d: Date) {
