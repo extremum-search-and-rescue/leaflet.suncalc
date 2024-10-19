@@ -1,4 +1,4 @@
-﻿function isValidDate(d: Date | number): boolean {
+function isValidDate(d: Date | number): boolean {
     return d instanceof Date && !isNaN(d as unknown as number);
 }
 declare interface Date {
@@ -51,6 +51,7 @@ namespace L {
             circleSize: number;
             controlMargin: number;
             fullControlSize: number;
+            timeOffetMinutes: number;
 
             constructor(options?: SunCalcControlOptions) {
                 options = { ...new SunCalcControlOptions(), ...options }
@@ -93,16 +94,18 @@ namespace L {
                 this._previousDate = currentDate;
             }
 
-            updateSunMoonCalc () {
+            updateSunMoonCalc() {
                 if (!this._map.hasLayer(suncalc)) return;
 
                 const mapCenter = this._map.wrapLatLng(this._map.getCenter());
                 const currentDate = new Date();
-
-                this._map.sunCalcControl.refesh(
-                    SunCalc.getTimes(currentDate, mapCenter.lat, mapCenter.lng),
-                    SunCalc.getMoonTimes(currentDate, mapCenter.lat, mapCenter.lng),
-                    mapCenter);
+                const self = this;
+                requestAnimationFrame(function () {
+                    self._map.sunCalcControl.refesh(
+                        SunCalc.getTimes(currentDate, mapCenter.lat, mapCenter.lng),
+                        SunCalc.getMoonTimes(currentDate, mapCenter.lat, mapCenter.lng),
+                        mapCenter)
+                });
                 this._previousCenter = mapCenter;
                 this._previousDate = currentDate;
             }
@@ -138,8 +141,20 @@ namespace L {
                 if (!this._map.hasLayer(suncalc)) {
                     this._container.innerHTML = '';
                 } else {
-                    const circleSize = this.circleSize = L.Browser.mobile ? Math.min(window.screen.availWidth, window.screen.availHeight) - 80 : 500;
-                    const controlMargin = this.controlMargin = L.Browser.mobile ? 15 : 20;
+                    const currentTime = new Date();
+                    this.timeOffetMinutes = function () {
+                        const mapcenterTimezone = tzlookup(latlng.lat, latlng.lng);
+                        const mapcenterDate = new Date(currentTime.toLocaleString('en-US', { timeZone: mapcenterTimezone }));
+                        return Math.round((mapcenterDate.getTime() - currentTime.getTime())/(1000*60));
+                    }();
+            
+                    const circleSize = this.circleSize = Math.min(
+                            Math.min(
+                                window?.innerWidth ?? parent.innerWidth,
+                                window?.innerHeight ?? parent.innerHeight
+                            ) - 80,
+                        512) ?? 300;
+                    const controlMargin = this.controlMargin = L.Browser.mobile ? 16 : 24;
                     const fullControlSize = this.fullControlSize = this.circleSize + this.controlMargin * 2;
                     const halfSize = this.halfSize = circleSize / 2;
                     const sunRadius = this.options.sunRadius;
@@ -158,7 +173,6 @@ namespace L {
                     const sunrise = sunTimes['sunrise'];
                     const sunset = sunTimes['sunset'];
                     const dusk = sunTimes['dusk'];
-                    const currentTime = new Date();
                     const sunPosition = SunCalc.getPosition(currentTime, latlng.lat, latlng.lng);
                     const moonPosition = SunCalc.getMoonPosition(currentTime, latlng.lat, latlng.lng);
 
@@ -181,6 +195,21 @@ namespace L {
                     const sunPathCircle = `${sunPathClip}<circle class="gis-themeware suncalc-sun-path ${theme}" clip-path="url(#mask1)" id="sunPath" cx="${halfSize}" cy="${halfSize}" r="${halfSize + 4}"/>`;
                     const moonPathCircle = `${moonPathClip}<circle class="gis-themeaware suncalc-moon-path ${theme}" clip-path="url(#mask2)" cx="${halfSize}" cy="${halfSize}" r="${halfSize - 4}" id="moonPath"/>`;
 
+                    const timeDifferenceLabel = ((): string => {
+                        let retval: string;
+                        if (Math.abs(this.timeOffetMinutes) !== 0)
+                        {
+                            let minutes = 0;
+                            let sign = this.timeOffetMinutes < -0 ? '-' : '+';
+                            let hours = this.timeOffetMinutes / 60;
+                            if (hours !== Math.round(hours)) {
+                                minutes = Math.abs((Math.abs(Math.round(hours)) - Math.abs(hours)))*60;
+                            }
+                            retval = `<text class="suncalc-sun-label ${theme}" x="${halfSize+16}" y="${halfSize-4}">${sign}${Math.abs(Math.round(hours)).pad(2)}:${minutes.pad(2)}</text>`
+                        }
+                        return retval;
+                    })();
+
                     const svgCode = [
                         `<svg class="suncalc" width="${fullControlSize}" height="${fullControlSize}" xmlns="http://www.w3.org/2000/svg" overflow="visible" viewBox="0 0 ${fullControlSize} ${fullControlSize}">`,
                         this.getSvgTextLabel(dusk, SunCalc.getPosition(dusk, latlng.lat, latlng.lng), `suncalc-sun-label ${theme}`, 'suncalc-shaded'),
@@ -202,6 +231,7 @@ namespace L {
                         sunAzimuth,
                         sunCircle,
                         moonCircle,
+                        timeDifferenceLabel,
                         `<defs>${sunBackgroundEffects}${azimuthBackgroundEffects}</defs>`,
                         '</svg>',
                         '</svg>'
@@ -210,10 +240,11 @@ namespace L {
                 }
             }
 
-            getSvgTextLabel (date: Date, position: SunCalc.GetSunPositionResult, cls:string, shadedCls:string, startTime?: Date, endTime?: Date): string {
+            getSvgTextLabel(date: Date, position: SunCalc.GetSunPositionResult, cls: string, shadedCls: string, startTime?: Date, endTime?: Date): string {
                 if (!isValidDate(date) || date > endTime || date < startTime) return '';
+                const localDate = date.addMinutes(this.timeOffetMinutes);
                 const xy = this.getXY(position, 20);
-                return `<text class="${cls}${position.altitude < -0.1 ? ` ${shadedCls}` : ''}" x="${xy.x}" y="${xy.y}">${date.getHours().pad(2)}:${date.getMinutes().pad(2)}</text>`;
+                return `<text class="${cls}${position.altitude < -0.1 ? ` ${shadedCls}` : ''}" x="${xy.x}" y="${xy.y}">${localDate.getHours().pad(2)}:${localDate.getMinutes().pad(2)}</text>`;
             }
 
             getTimesFromDuskTillDown (start: Date, end: Date): Array<Date> {
