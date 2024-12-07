@@ -1,83 +1,83 @@
-﻿.suncalc-control {
+﻿.leaflet-container .suncalc-control {
     pointer-events: none;
 }
-.suncalc-dusk {
+.leaflet-container .suncalc-dusk {
     fill: red;
     stroke-width: 0;
     fill-opacity: 0.5;
 }
 
-.suncalc-dawn {
+.leaflet-container .suncalc-dawn {
     fill: yellow;
     stroke-width: 0;
     fill-opacity: 0.5;
 }
 
 @media (pointer: coarse) {
-    .suncalc-sun-label {
+    .leaflet-container .suncalc-sun-label {
         font-size: 9px;
     }
 }
 
 @media (pointer: fine) {
-    .suncalc-sun-label {
+    .leaflet-container .suncalc-sun-label {
         font-size: 11px;
     }
 }
 
-.suncalc-sun {
+.leaflet-container .suncalc-sun {
     fill: #FFB800;
     fill-opacity: 0.5;
 }
 
-.suncalc-moon.gis-theme-light{
+.leaflet-container .suncalc-moon.gis-theme-light{
     fill: black;
 }
-.suncalc-moon.gis-theme-dark {
+.leaflet-container .suncalc-moon.gis-theme-dark {
     fill: white;
 }
 
-.suncalc-sun-path {
+.leaflet-container .suncalc-sun-path {
     stroke-width: 2;
     stroke-opacity: 0.7;
     stroke-dasharray: 7px 3px;
     fill: none;
 }
-.suncalc-sun-path.gis-theme-light {
+.leaflet-container .suncalc-sun-path.gis-theme-light {
     stroke: orangered;
 }
 
-.suncalc-sun-path.gis-theme-dark {
+.leaflet-container .suncalc-sun-path.gis-theme-dark {
     stroke: orange;
 }
 
-.suncalc-moon-path {
+.leaflet-container .suncalc-moon-path {
     stroke-width: 2;
     stroke-dasharray: 2 2;
     stroke-opacity: 0.7;
     fill: none;
 }
-.suncalc-moon-path.gis-theme-light {
+.leaflet-container .suncalc-moon-path.gis-theme-light {
     stroke: darkred;
 }
 
-.suncalc-moon-path.gis-theme-dark {
+.leaflet-container .suncalc-moon-path.gis-theme-dark {
     stroke: white;
 }
-.suncalc-azimuth-circle {
+.leaflet-container .suncalc-azimuth-circle {
     stroke-width: 2;
     stroke-opacity: 0.8;
     fill: none;
 }
-.suncalc-azimuth-circle.gis-theme-light {
+.leaflet-container .suncalc-azimuth-circle.gis-theme-light {
     stroke: darkred;
 }
 
-.suncalc-azimuth-circle.gis-theme-dark {
+.leaflet-container .suncalc-azimuth-circle.gis-theme-dark {
     stroke: white;
 }
 
-.suncalc-sun-label {
+.leaflet-container .suncalc-sun-label {
     font-family: -apple-system, "Helvetica Neue", "Segoe UI", "Roboto", sans-serif;
     text-anchor: middle;
     font-weight: bold;
@@ -85,16 +85,16 @@
     user-select: none;
 }
 
-    .suncalc-sun-label.gis-theme-light {
+    .leaflet-container .suncalc-sun-label.gis-theme-light {
         fill: darkred;
         text-shadow: 1px 1px white;
     }
-    .suncalc-sun-label.gis-theme-dark {
+    .leaflet-container .suncalc-sun-label.gis-theme-dark {
         fill: #FFB800;
         text-shadow: 1px 1px black;
     }
 
 
-.suncalc-shaded {
+    .leaflet-container .suncalc-shaded {
     opacity: 0.5;
 }
